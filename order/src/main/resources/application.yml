@@ -19,6 +19,12 @@ spring:
     port: 5672
     username: guest
     password: guest
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: ${keycloak.auth-server-url}/realms/${keycloak.realm}
+          jwk-set-uri: ${keycloak.auth-server-url}/realms/${keycloak.realm}/protocol/openid-connect/certs
 
 logging:
   level:
@@ -44,12 +50,7 @@ keycloak:
   credentials:
     secret: VcCYnLvPYQ6jytago8FV5am9AmMzsbjc
 
-security:
-  oauth2:
-    resourceserver:
-      jwt:
-        issuer-uri: ${keycloak.auth-server-url}/realms/${keycloak.realm}
-        jwk-set-uri: ${keycloak.auth-server-url}/realms/${keycloak.realm}/protocol/openid-connect/certs
+
 
 management:
   endpoints:
@@ -59,3 +60,5 @@ management:
   endpoint:
     health:
       show-details: when-authorized
+
+
