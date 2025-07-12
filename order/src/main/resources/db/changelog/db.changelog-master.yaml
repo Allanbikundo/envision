@@ -1,3 +1,11 @@
 databaseChangeLog:
-#  - include:
-#      file: db/changelog/001-create-order-table.yaml
+  - include:
+      file: db/changelog/changes/001-create-addresses-table.yaml
+  - include:
+      file: db/changelog/changes/002-create-orders-table.yaml
+  - include:
+      file: db/changelog/changes/003-create-order-items-table.yaml
+  - include:
+      file: db/changelog/changes/004-create-inventory-reservations-table.yaml
+  - include:
+      file: db/changelog/changes/005-create-order-status-history-table.yaml

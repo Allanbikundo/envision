@@ -1,0 +1,61 @@
+databaseChangeLog:
+  - changeSet:
+      id: 001-create-addresses-table
+      author: allan
+      changes:
+        - createTable:
+            tableName: addresses
+            columns:
+              - column:
+                  {
+                    name: id,
+                    type: BIGSERIAL,
+                    constraints: { primaryKey: true },
+                  }
+              - column:
+                  {
+                    name: address_line1,
+                    type: VARCHAR(255),
+                    constraints: { nullable: false },
+                  }
+              - column: { name: address_line2, type: VARCHAR(255) }
+              - column:
+                  {
+                    name: city,
+                    type: VARCHAR(100),
+                    constraints: { nullable: false },
+                  }
+              - column: { name: state_province, type: VARCHAR(100) }
+              - column: { name: postal_code, type: VARCHAR(20) }
+              - column:
+                  {
+                    name: country,
+                    type: VARCHAR(100),
+                    constraints: { nullable: false },
+                  }
+              - column:
+                  {
+                    name: address_type,
+                    type: VARCHAR(20),
+                    defaultValue: "BOTH",
+                  }
+              - column:
+                  {
+                    name: created_at,
+                    type: TIMESTAMP,
+                    defaultValueComputed: CURRENT_TIMESTAMP,
+                  }
+              - column:
+                  {
+                    name: updated_at,
+                    type: TIMESTAMP,
+                    defaultValueComputed: CURRENT_TIMESTAMP,
+                  }
+        - sql:
+            splitStatements: false
+            sql: |
+              ALTER TABLE addresses
+              ADD CONSTRAINT check_address_type
+              CHECK (address_type IN ('SHIPPING', 'BILLING', 'BOTH'));
+
+

@@ -1,0 +1,79 @@
+databaseChangeLog:
+  - changeSet:
+      id: 004-create-inventory-reservations-table
+      author: allan
+      changes:
+        - createTable:
+            tableName: inventory_reservations
+            columns:
+              - column:
+                  {
+                    name: id,
+                    type: BIGSERIAL,
+                    constraints: { primaryKey: true },
+                  }
+              - column:
+                  {
+                    name: order_id,
+                    type: BIGINT,
+                    constraints: { nullable: false },
+                  }
+              - column:
+                  {
+                    name: product_id,
+                    type: BIGINT,
+                    constraints: { nullable: false },
+                  }
+              - column:
+                  {
+                    name: product_sku,
+                    type: VARCHAR(100),
+                    constraints: { nullable: false },
+                  }
+              - column:
+                  {
+                    name: quantity_reserved,
+                    type: INTEGER,
+                    constraints: { nullable: false },
+                  }
+              - column:
+                  {
+                    name: reservation_status,
+                    type: VARCHAR(20),
+                    defaultValue: "RESERVED",
+                    constraints: { nullable: false },
+                  }
+              - column:
+                  {
+                    name: reserved_at,
+                    type: TIMESTAMP,
+                    defaultValueComputed: CURRENT_TIMESTAMP,
+                    constraints: { nullable: false },
+                  }
+              - column:
+                  {
+                    name: expires_at,
+                    type: TIMESTAMP,
+                    constraints: { nullable: false },
+                  }
+              - column: { name: released_at, type: TIMESTAMP }
+              - column: { name: released_reason, type: VARCHAR(50) }
+        - addForeignKeyConstraint:
+            baseTableName: inventory_reservations
+            baseColumnNames: order_id
+            referencedTableName: orders
+            referencedColumnNames: id
+            onDelete: CASCADE
+            constraintName: fk_inventory_reservations_order_id
+        - sql:
+            splitStatements: false
+            sql: |
+              ALTER TABLE inventory_reservations
+              ADD CONSTRAINT check_reservation_status
+              CHECK (reservation_status IN ('RESERVED', 'CONFIRMED', 'EXPIRED', 'RELEASED'));
+        - sql:
+            splitStatements: false
+            sql: |
+              ALTER TABLE inventory_reservations
+              ADD CONSTRAINT check_released_reason
+              CHECK (released_reason IN ('CANCELLED', 'EXPIRED', 'CONFIRMED') OR released_reason IS NULL);
