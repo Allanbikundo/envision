@@ -1,0 +1,38 @@
+server:
+  port: 8081 # change to 8082 for order-service
+
+spring:
+  datasource:
+    url: jdbc:postgresql://localhost:5433/productdb # change to 5434 for order-service
+    username: productuser                            # change to orderuser
+    password: productpass                            # change to orderpass
+    driver-class-name: org.postgresql.Driver
+  jpa:
+    hibernate:
+      ddl-auto: update
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+    show-sql: true
+  rabbitmq:
+    host: localhost
+    port: 5672
+    username: guest
+    password: guest
+
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: http://localhost:8080/realms/ecommerce # Keycloak realm URL
+
+logging:
+  level:
+    org.springframework.security: INFO
+    org.hibernate.SQL: DEBUG
+
+springdoc:
+  api-docs:
+    path: /v3/api-docs
+  swagger-ui:
+    path: /swagger-ui.html

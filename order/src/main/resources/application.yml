@@ -1,0 +1,61 @@
+server:
+  port: 8082
+
+spring:
+  datasource:
+    url: jdbc:postgresql://localhost:5434/orderdb
+    username: orderuser                            
+    password: orderpass                             
+    driver-class-name: org.postgresql.Driver
+  jpa:
+    hibernate:
+      ddl-auto: update
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+    show-sql: true
+  rabbitmq:
+    host: localhost
+    port: 5672
+    username: guest
+    password: guest
+
+logging:
+  level:
+    org.springframework.security: INFO
+    org.hibernate.SQL: DEBUG
+
+springdoc:
+  api-docs:
+    path: /v3/api-docs
+  swagger-ui:
+    path: /swagger-ui.html
+
+keycloak:
+  auth-server-url: http://localhost:8080
+  realm: ecommerce
+  resource: order-client
+  public-client: true
+  principal-attribute: preferred_username
+  use-resource-role-mappings: true
+  bearer-only: true
+  ssl-required: external
+  cors: true
+  credentials:
+    secret: VcCYnLvPYQ6jytago8FV5am9AmMzsbjc
+
+security:
+  oauth2:
+    resourceserver:
+      jwt:
+        issuer-uri: ${keycloak.auth-server-url}/realms/${keycloak.realm}
+        jwk-set-uri: ${keycloak.auth-server-url}/realms/${keycloak.realm}/protocol/openid-connect/certs
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics
+  endpoint:
+    health:
+      show-details: when-authorized
