@@ -1,0 +1,105 @@
+version: "3.9"
+
+services:
+  # 🔐 Keycloak
+  keycloak:
+    image: quay.io/keycloak/keycloak:24.0.1
+    command: start-dev
+    environment:
+      KEYCLOAK_ADMIN: admin
+      KEYCLOAK_ADMIN_PASSWORD: admin
+    ports:
+      - "8080:8080"
+    networks:
+      - ecommerce-net
+
+  # 🐘 PostgreSQL for Product Service
+  product-db:
+    image: postgres:16
+    environment:
+      POSTGRES_DB: productdb
+      POSTGRES_USER: productuser
+      POSTGRES_PASSWORD: productpass
+    ports:
+      - "5433:5432"
+    networks:
+      - ecommerce-net
+    volumes:
+      - product-data:/var/lib/postgresql/data
+
+  # 🐘 PostgreSQL for Order Service
+  order-db:
+    image: postgres:16
+    environment:
+      POSTGRES_DB: orderdb
+      POSTGRES_USER: orderuser
+      POSTGRES_PASSWORD: orderpass
+    ports:
+      - "5434:5432"
+    networks:
+      - ecommerce-net
+    volumes:
+      - order-data:/var/lib/postgresql/data
+
+  # 🐇 RabbitMQ
+  rabbitmq:
+    image: rabbitmq:3-management
+    ports:
+      - "5672:5672"   # Broker
+      - "15672:15672" # Management UI
+    networks:
+      - ecommerce-net
+
+  # 📦 Product Service
+  # product-service:
+  #   build:
+  #     context: ./product-service
+  #   environment:
+  #     SPRING_DATASOURCE_URL: jdbc:postgresql://product-db:5432/productdb
+  #     SPRING_DATASOURCE_USERNAME: productuser
+  #     SPRING_DATASOURCE_PASSWORD: productpass
+  #     SPRING_RABBITMQ_HOST: rabbitmq
+  #     SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_ISSUER_URI: http://keycloak:8080/realms/ecommerce
+  #   depends_on:
+  #     - product-db
+  #     - rabbitmq
+  #     - keycloak
+  #   networks:
+  #     - ecommerce-net
+
+  # 🛒 Order Service
+  # order-service:
+  #   build:
+  #     context: ./order-service
+  #   environment:
+  #     SPRING_DATASOURCE_URL: jdbc:postgresql://order-db:5432/orderdb
+  #     SPRING_DATASOURCE_USERNAME: orderuser
+  #     SPRING_DATASOURCE_PASSWORD: orderpass
+  #     SPRING_RABBITMQ_HOST: rabbitmq
+  #     SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_ISSUER_URI: http://keycloak:8080/realms/ecommerce
+  #   depends_on:
+  #     - order-db
+  #     - rabbitmq
+  #     - keycloak
+  #   networks:
+  #     - ecommerce-net
+
+  # # 🌐 Optional API Gateway
+  # api-gateway:
+  #   build:
+  #     context: ./api-gateway
+  #   ports:
+  #     - "8088:8080"
+  #   depends_on:
+  #     - order-service
+  #     - product-service
+  #   networks:
+  #     - ecommerce-net
+
+volumes:
+  product-data:
+  order-data:
+
+networks:
+  ecommerce-net:
+    driver: bridge
