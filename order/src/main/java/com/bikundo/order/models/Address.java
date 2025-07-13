@@ -41,7 +41,14 @@ public class Address {
     private String country;
 
     @Column(name = "address_type", nullable = false)
-    private String addressType = "BOTH";
+    @Enumerated(EnumType.STRING)
+    private AddressType addressType = AddressType.BOTH;
+
+    public enum AddressType {
+        SHIPPING,
+        BILLING,
+        BOTH
+    }
 
     @CreationTimestamp
     @Column(name = "created_at", nullable = false, updatable = false)
