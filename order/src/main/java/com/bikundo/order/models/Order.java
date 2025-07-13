@@ -28,7 +28,7 @@ public class Order {
     private String orderNumber;
 
     @Column(name = "customer_id", nullable = false)
-    private Long customerId;
+    private UUID customerId;
 
     @Column(name = "order_status", nullable = false)
     @Enumerated(EnumType.STRING)
