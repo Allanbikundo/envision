@@ -14,7 +14,7 @@ public class SecurityConfig {
     public SecurityWebFilterChain springSecurityFilterChain(ServerHttpSecurity http) {
         http
                 .authorizeExchange(exchanges -> exchanges
-                        .pathMatchers("/swagger-ui/**", "/v3/api-docs/**").permitAll()
+                        .pathMatchers("/swagger-ui/**", "/v3/api-docs/**","/swagger-ui.html").permitAll()
                         .anyExchange().authenticated()
                 )
                 .oauth2ResourceServer(ServerHttpSecurity.OAuth2ResourceServerSpec::jwt);
