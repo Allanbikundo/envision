@@ -83,7 +83,7 @@ databaseChangeLog:
             sql: |
               ALTER TABLE orders
               ADD CONSTRAINT check_order_status
-              CHECK (order_status IN ('PENDING', 'CONFIRMED', 'PROCESSING', 'SHIPPED', 'DELIVERED', 'CANCELLED'));
+              CHECK (order_status IN ('PENDING', 'CONFIRMED', 'PROCESSING', 'SHIPPED', 'DELIVERED', 'CANCELLED', 'FAILED'));
         - addForeignKeyConstraint:
             baseTableName: orders
             baseColumnNames: shipping_address_id

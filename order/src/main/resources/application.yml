@@ -60,5 +60,9 @@ management:
   endpoint:
     health:
       show-details: when-authorized
+mq:
+  inventory:
+    failed:
+      queue: inventory.failed.queue
 
 

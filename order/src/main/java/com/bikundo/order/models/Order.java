@@ -87,6 +87,6 @@ public class Order {
     private List<OrderStatusHistory> statusHistory;
 
     public enum OrderStatus {
-        PENDING, CONFIRMED, PROCESSING, SHIPPED, DELIVERED, CANCELLED
+        PENDING, CONFIRMED, PROCESSING, SHIPPED, DELIVERED, CANCELLED,FAILED
     }
 }
