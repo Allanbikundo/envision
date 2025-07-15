@@ -1,11 +1,31 @@
 version: "3.9"
 
 services:
+  # 🐘 PostgreSQL – Keycloak
+  keycloak-db:
+    image: postgres:16
+    environment:
+      POSTGRES_DB: keycloak
+      POSTGRES_USER: keycloak
+      POSTGRES_PASSWORD: keycloak
+    ports:
+      - "5435:5432"
+    networks:
+      - ecommerce-net
+    volumes:
+      - keycloak-data:/var/lib/postgresql/data
+
   # 🔐 Keycloak
   keycloak:
     image: quay.io/keycloak/keycloak:24.0.1
-    command: start-dev
+    command: start-dev                 # production mode
+    depends_on:
+      - keycloak-db
     environment:
+      KC_DB: postgres
+      KC_DB_URL: jdbc:postgresql://keycloak-db:5432/keycloak
+      KC_DB_USERNAME: keycloak
+      KC_DB_PASSWORD: keycloak
       KEYCLOAK_ADMIN: admin
       KEYCLOAK_ADMIN_PASSWORD: admin
     ports:
@@ -13,7 +33,7 @@ services:
     networks:
       - ecommerce-net
 
-  # 🐘 PostgreSQL for Product Service
+  # 🐘 PostgreSQL – Product Service
   product-db:
     image: postgres:16
     environment:
@@ -27,7 +47,7 @@ services:
     volumes:
       - product-data:/var/lib/postgresql/data
 
-  # 🐘 PostgreSQL for Order Service
+  # 🐘 PostgreSQL – Order Service
   order-db:
     image: postgres:16
     environment:
@@ -45,58 +65,61 @@ services:
   rabbitmq:
     image: rabbitmq:3-management
     ports:
-      - "5672:5672"   # Broker
-      - "15672:15672" # Management UI
+      - "5672:5672"
+      - "15672:15672"
     networks:
       - ecommerce-net
 
   # 📦 Product Service
-  # product-service:
-  #   build:
-  #     context: ./product-service
-  #   environment:
-  #     SPRING_DATASOURCE_URL: jdbc:postgresql://product-db:5432/productdb
-  #     SPRING_DATASOURCE_USERNAME: productuser
-  #     SPRING_DATASOURCE_PASSWORD: productpass
-  #     SPRING_RABBITMQ_HOST: rabbitmq
-  #     SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_ISSUER_URI: http://keycloak:8080/realms/ecommerce
-  #   depends_on:
-  #     - product-db
-  #     - rabbitmq
-  #     - keycloak
-  #   networks:
-  #     - ecommerce-net
+  product-service:
+    image: ghcr.io/allanbikundo/product:latest
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://product-db:5432/productdb
+      SPRING_DATASOURCE_USERNAME: productuser
+      SPRING_DATASOURCE_PASSWORD: productpass
+      SPRING_RABBITMQ_HOST: rabbitmq
+      SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_ISSUER_URI: http://keycloak:8080/realms/ecommerce
+    depends_on:
+      - product-db
+      - rabbitmq
+      - keycloak
+    ports:
+      - "8082:8082"
+    networks:
+      - ecommerce-net
 
   # 🛒 Order Service
-  # order-service:
-  #   build:
-  #     context: ./order-service
-  #   environment:
-  #     SPRING_DATASOURCE_URL: jdbc:postgresql://order-db:5432/orderdb
-  #     SPRING_DATASOURCE_USERNAME: orderuser
-  #     SPRING_DATASOURCE_PASSWORD: orderpass
-  #     SPRING_RABBITMQ_HOST: rabbitmq
-  #     SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_ISSUER_URI: http://keycloak:8080/realms/ecommerce
-  #   depends_on:
-  #     - order-db
-  #     - rabbitmq
-  #     - keycloak
-  #   networks:
-  #     - ecommerce-net
+  order-service:
+    image: ghcr.io/allanbikundo/order:main-e4f8760
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://order-db:5432/orderdb
+      SPRING_DATASOURCE_USERNAME: orderuser
+      SPRING_DATASOURCE_PASSWORD: orderpass
+      SPRING_RABBITMQ_HOST: rabbitmq
+      SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_ISSUER_URI: http://keycloak:8080/realms/ecommerce
+    depends_on:
+      - order-db
+      - rabbitmq
+      - keycloak
+    ports:
+      - "8081:8081"
+    networks:
+      - ecommerce-net
 
-  # # 🌐 Optional API Gateway
-  # api-gateway:
-  #   build:
-  #     context: ./api-gateway
-  #   ports:
-  #     - "8088:8080"
-  #   depends_on:
-  #     - order-service
-  #     - product-service
-  #   networks:
-  #     - ecommerce-net
+  # 🎨 UI
+  ui:
+    image: ghcr.io/allanbikundo/ui:main-e4f8760
+    ports:
+      - "9080:9080"
+    depends_on:
+      - product-service
+      - order-service
+      - keycloak
+    networks:
+      - ecommerce-net
 
 volumes:
+  keycloak-data:
   product-data:
   order-data:
 
