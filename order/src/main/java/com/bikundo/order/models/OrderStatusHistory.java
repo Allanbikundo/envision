@@ -27,10 +27,12 @@ public class OrderStatusHistory {
     private Order order;
 
     @Column(name = "previous_status")
-    private String previousStatus;
+    @Enumerated(EnumType.STRING)
+    private Order.OrderStatus previousStatus;
 
     @Column(name = "new_status", nullable = false)
-    private String newStatus;
+    @Enumerated(EnumType.STRING)
+    private Order.OrderStatus newStatus;
 
     @Column(name = "changed_by")
     private String changedBy;

@@ -8,9 +8,11 @@ import com.bikundo.order.mappers.OrderMapper;
 import com.bikundo.order.models.Order;
 import com.bikundo.order.models.Order.OrderStatus;
 import com.bikundo.order.models.OrderItem;
+import com.bikundo.order.models.OrderStatusHistory;
 import com.bikundo.order.repositories.AddressRepository;
 import com.bikundo.order.repositories.OrderItemRepository;
 import com.bikundo.order.repositories.OrderRepository;
+import com.bikundo.order.repositories.OrderStatusHistoryRepository;
 import com.bikundo.order.services.OrderService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
@@ -30,6 +32,7 @@ import java.util.UUID;
 public class OrderServiceImpl implements OrderService {
     private final OrderRepository orderRepository;
     private final OrderItemRepository orderItemRepository;
+    private final OrderStatusHistoryRepository orderStatusHistoryRepository;
     private final AddressRepository addressRepository;
     private final RabbitTemplate rabbitTemplate;
     private final OrderMapper orderMapper;
@@ -118,10 +121,31 @@ public class OrderServiceImpl implements OrderService {
     }
 
     @Override
-    public void updateOrderStatus(Long id, OrderStatus status, String changedBy) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'updateOrderStatus'");
+    @Transactional
+    public void updateOrderStatus(Long id, OrderStatus newStatus, String changedBy) {
+        Order order = orderRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Order not found with ID: " + id));
+
+        OrderStatus previousStatus = order.getOrderStatus();
+
+        // Only update if status is actually changing
+        if (previousStatus != newStatus) {
+            order.setOrderStatus(newStatus);
+            orderRepository.save(order);
+
+            // Record the change in history
+            OrderStatusHistory history = OrderStatusHistory.builder()
+                    .order(order)
+                    .previousStatus(previousStatus)
+                    .newStatus(newStatus)
+                    .changedBy(changedBy)
+                    .changeReason("Updated programmatically")
+                    .build();
+
+            orderStatusHistoryRepository.save(history);
+        }
     }
+
 
     private String generateOrderNumber() {
         String datePart = LocalDate.now().format(DateTimeFormatter.BASIC_ISO_DATE); // yyyyMMdd
