@@ -1,12 +1,13 @@
 package com.bikundo.order.implementations;
 
+import java.io.Serializable;
 import java.util.List;
 import java.util.UUID;
 
 import lombok.Data;
 
 @Data
-public class OrderPlacedEvent {
+public class OrderPlacedEvent implements Serializable {
     private Long orderId;
     private UUID userId;
     private String orderNumber;

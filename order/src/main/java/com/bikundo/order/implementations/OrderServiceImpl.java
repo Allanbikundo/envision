@@ -53,9 +53,9 @@ public class OrderServiceImpl implements OrderService {
         order.setBillingAddress(billingAddress);
         order.setExternalReference(request.getExternalReference());
         order.setNotes(request.getNotes());
-
+        order.setTotalAmount(BigDecimal.ZERO);
         Order savedOrder = orderRepository.save(order);
-        
+
         List<OrderItem> items = orderMapper.toEntityItemList(request.getItems());
 
         for (OrderItem item : items) {

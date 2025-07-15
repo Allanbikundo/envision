@@ -24,7 +24,8 @@ spring:
     oauth2:
       resourceserver:
         jwt:
-          issuer-uri: http://localhost:8080/realms/ecommerce # Keycloak realm URL
+          issuer-uri: ${keycloak.auth-server-url}/realms/${keycloak.realm}
+          jwk-set-uri: ${keycloak.auth-server-url}/realms/${keycloak.realm}/protocol/openid-connect/certs
 
 logging:
   level:
@@ -36,3 +37,27 @@ springdoc:
     path: /v3/api-docs
   swagger-ui:
     path: /swagger-ui.html
+
+keycloak:
+  auth-server-url: http://localhost:8080
+  realm: ecommerce
+  resource: order-client
+  public-client: true
+  principal-attribute: preferred_username
+  use-resource-role-mappings: true
+  bearer-only: true
+  ssl-required: external
+  cors: true
+  credentials:
+    secret: VcCYnLvPYQ6jytago8FV5am9AmMzsbjc
+
+
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics
+  endpoint:
+    health:
+      show-details: when-authorized
