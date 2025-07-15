@@ -6,11 +6,14 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.*;
 
+import io.swagger.v3.oas.annotations.Hidden;
+
 import java.util.HashMap;
 import java.util.Map;
 
 @RestControllerAdvice
 @Slf4j
+@Hidden
 public class GlobalExceptionHandler {
 
     @ExceptionHandler(IllegalArgumentException.class)

@@ -16,7 +16,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        service: [order, product, gateway]
+        service: [order, product, gateway, ui]
     
     steps:
       - name: Checkout repository

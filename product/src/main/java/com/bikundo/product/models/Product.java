@@ -34,6 +34,7 @@ public class Product {
 
     private String description;
 
+    @Column(precision = 10, scale = 2)
     private BigDecimal price;
 
     private Integer stockQuantity;
@@ -43,4 +44,6 @@ public class Product {
 
     @UpdateTimestamp
     private Instant updatedAt;
+
+
 }

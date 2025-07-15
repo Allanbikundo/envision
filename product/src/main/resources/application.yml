@@ -19,6 +19,7 @@ spring:
     port: 5672
     username: guest
     password: guest
+    virtual-host: /
 
   security:
     oauth2:
@@ -49,7 +50,7 @@ keycloak:
   ssl-required: external
   cors: true
   credentials:
-    secret: VcCYnLvPYQ6jytago8FV5am9AmMzsbjc
+    secret: dd93ogSxk9aZOiIWKPAuiC4RrbzkjMrU
 
 
 
@@ -61,3 +62,19 @@ management:
   endpoint:
     health:
       show-details: when-authorized
+
+rabbitmq:
+  queues:
+    order-placed:
+      name: order.placed.queue
+      durable: true
+      auto-delete: false
+  exchanges:
+    order:
+      name: order.exchange
+      type: topic
+  bindings:
+    order-placed:
+      queue: order.placed.queue
+      exchange: order.exchange
+      routing-key: order.placed

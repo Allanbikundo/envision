@@ -9,6 +9,7 @@ import com.bikundo.product.services.ProductService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.Assert;
 
 import java.util.List;
 
@@ -22,6 +23,7 @@ public class ProductServiceImpl implements ProductService {
 
     @Override
     public ProductDto createProduct(CreateProductRequest request) {
+        Assert.notNull(request,"the request should not be null");
         Product product = productMapper.toEntity(request);
         return productMapper.toDto(productRepository.save(product));
     }

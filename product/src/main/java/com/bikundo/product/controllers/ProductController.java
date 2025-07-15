@@ -9,6 +9,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.media.Schema;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -32,7 +33,7 @@ public class ProductController {
         }
     )
     @PostMapping
-    public ResponseEntity<ProductDto> createProduct(@RequestBody CreateProductRequest request) {
+    public ResponseEntity<ProductDto> createProduct(@Valid @RequestBody CreateProductRequest request) {
         return ResponseEntity.ok(productService.createProduct(request));
     }
 
