@@ -82,10 +82,7 @@ class OrderControllerTest {
         OrderItemDto orderItem = OrderItemDto.builder()
                 .id(1L)
                 .productId(1L)
-                .productName("samsung")
-                .productSku("sku")
                 .quantity(1)
-                .unitPrice(BigDecimal.TEN)
                 .build();
         OrderDto order = new OrderDto();
         order.setId(1L);
