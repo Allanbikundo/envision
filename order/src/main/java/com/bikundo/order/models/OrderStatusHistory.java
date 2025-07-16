@@ -9,6 +9,7 @@ import lombok.NoArgsConstructor;
 import org.hibernate.annotations.CreationTimestamp;
 
 import java.time.Instant;
+import java.util.UUID;
 
 @Data
 @Builder
@@ -35,7 +36,7 @@ public class OrderStatusHistory {
     private Order.OrderStatus newStatus;
 
     @Column(name = "changed_by")
-    private String changedBy;
+    private UUID changedBy;
 
     @Column(name = "change_reason")
     private String changeReason;

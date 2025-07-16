@@ -1,20 +1,23 @@
 package com.bikundo.product.dtos;
 
+import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
-import java.io.Serializable;
 import java.util.List;
-import java.util.UUID;
 
 @Data
-public class OrderPlacedEvent implements Serializable {
+@NoArgsConstructor
+@AllArgsConstructor
+public class RestockInventoryEvent {
     private Long orderId;
-    private UUID userId;
     private List<Item> items;
 
     @Data
+    @NoArgsConstructor
+    @AllArgsConstructor
     public static class Item {
         private Long productId;
-        private Integer quantity;
+        private int quantity;
     }
 }

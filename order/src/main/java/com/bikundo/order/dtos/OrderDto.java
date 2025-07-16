@@ -14,8 +14,6 @@ public class OrderDto {
     private String orderStatus;
     private BigDecimal totalAmount;
     private String currency;
-    private Long shippingAddressId;
-    private Long billingAddressId;
     private String externalReference;
     private String contactEmail;
     private String contactPhone;

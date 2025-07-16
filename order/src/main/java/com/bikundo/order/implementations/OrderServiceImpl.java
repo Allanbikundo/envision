@@ -3,6 +3,8 @@ package com.bikundo.order.implementations;
 import com.bikundo.order.config.RabbitMQConfig;
 import com.bikundo.order.dtos.CreateOrderRequest;
 import com.bikundo.order.dtos.OrderDto;
+import com.bikundo.order.dtos.OrderPlacedEvent;
+import com.bikundo.order.dtos.RestockInventoryEvent;
 import com.bikundo.order.mappers.OrderMapper;
 import com.bikundo.order.models.Order;
 import com.bikundo.order.models.Order.OrderStatus;
@@ -122,9 +124,31 @@ public class OrderServiceImpl implements OrderService {
             throw new AccessDeniedException("You cannot cancel this order.");
         }
 
+        if (!OrderStatus.CONFIRMED.equals(order.getOrderStatus())) {
+            throw new IllegalStateException("Only confirmed orders can be cancelled.");
+        }
+
         order.setOrderStatus(OrderStatus.CANCELLED);
         order.setCancelledAt(Instant.now());
         orderRepository.save(order);
+
+        // 🔄 Restore inventory
+        List<OrderItem> items = orderItemRepository.findByOrderId(order.getId());
+
+        RestockInventoryEvent event = new RestockInventoryEvent();
+        event.setOrderId(order.getId());
+        event.setItems(items.stream().map(i -> {
+            RestockInventoryEvent.Item item = new RestockInventoryEvent.Item();
+            item.setProductId(i.getProductId());
+            item.setQuantity(i.getQuantity());
+            return item;
+        }).toList());
+
+        rabbitTemplate.convertAndSend(
+                RabbitMQConfig.INVENTORY_EXCHANGE,
+                RabbitMQConfig.RESTOCK_INVENTORY_ROUTING_KEY,
+                event
+        );
 
         updateOrderStatus(id, OrderStatus.CANCELLED, userId.toString());
     }
@@ -146,8 +170,8 @@ public class OrderServiceImpl implements OrderService {
             OrderStatusHistory history = OrderStatusHistory.builder()
                     .order(order)
                     .previousStatus(previousStatus)
+                    .changedBy(order.getCustomerId())
                     .newStatus(newStatus)
-                    .changedBy(changedBy)
                     .changeReason("Updated programmatically")
                     .build();
 

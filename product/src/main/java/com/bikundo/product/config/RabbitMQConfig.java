@@ -25,6 +25,9 @@ public class RabbitMQConfig {
     public static final String INVENTORY_RESERVED_ROUTING_KEY = "inventory.reserved";
     public static final String INVENTORY_FAILED_ROUTING_KEY = "inventory.failed";
 
+    public static final String RESTOCK_QUEUE = "inventory.restock.queue";
+    public static final String RESTOCK_ROUTING_KEY = "inventory.restock";
+
     // Exchanges
     @Bean
     public TopicExchange orderExchange() {
@@ -92,5 +95,18 @@ public class RabbitMQConfig {
         // Set default exchange if you want
         // template.setExchange(ORDER_EXCHANGE);
         return template;
+    }
+
+    @Bean
+    public Queue restockQueue() {
+        return new Queue(RESTOCK_QUEUE, true); // durable = true
+    }
+
+    @Bean
+    public Binding restockBinding() {
+        return BindingBuilder
+                .bind(restockQueue())
+                .to(inventoryExchange())
+                .with(RESTOCK_ROUTING_KEY);
     }
 }

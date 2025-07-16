@@ -40,7 +40,7 @@ springdoc:
     path: /swagger-ui.html
 
 keycloak:
-  auth-server-url: http://localhost:8080
+  auth-server-url: http://envision.ambience.co.ke:8080
   realm: ecommerce
   resource: order-client
   public-client: true
@@ -67,6 +67,10 @@ rabbitmq:
   queues:
     order-placed:
       name: order.placed.queue
+      durable: true
+      auto-delete: false
+    inventory:
+      name: inventory.restock.queue
       durable: true
       auto-delete: false
   exchanges:

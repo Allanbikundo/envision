@@ -13,6 +13,10 @@ import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
+
 @Component
 @RequiredArgsConstructor
 @Slf4j
@@ -26,20 +30,36 @@ public class OrderEventListener {
     @RabbitListener(queues = "${mq.order.placed.queue:order.placed.queue}")
     @Transactional
     public void handleOrderPlaced(OrderPlacedEvent event) {
-        log.info("Processing order placed: {}", event.getOrderNumber());
+        log.info("Processing order placed: {}", event.getOrderId());
 
         try {
+            // Step 1: Fetch all products involved
+            List<Long> productIds = event.getItems().stream()
+                    .map(OrderPlacedEvent.Item::getProductId)
+                    .toList();
+
+            Map<Long, Product> productMap = productRepository.findAllById(productIds).stream()
+                    .collect(Collectors.toMap(Product::getId, p -> p));
+
+            // Step 2: Validate stock availability
             for (OrderPlacedEvent.Item item : event.getItems()) {
-                Product product = productRepository.findById(item.getProductId())
-                        .orElseThrow(() -> new IllegalArgumentException("Product not found: " + item.getProductId()));
+                Product product = productMap.get(item.getProductId());
+                if (product == null) {
+                    throw new IllegalArgumentException("Product not found: " + item.getProductId());
+                }
 
                 if (product.getStockQuantity() < item.getQuantity()) {
                     throw new IllegalStateException("Insufficient stock for SKU: " + product.getSku());
                 }
-
-                product.setStockQuantity(product.getStockQuantity() - item.getQuantity());
-                productRepository.save(product);
             }
+
+            // Step 3: All good → reduce stock
+            for (OrderPlacedEvent.Item item : event.getItems()) {
+                Product product = productMap.get(item.getProductId());
+                product.setStockQuantity(product.getStockQuantity() - item.getQuantity());
+            }
+
+            productRepository.saveAll(productMap.values());
 
             // ✅ Success → publish InventoryReservedEvent
             InventoryReservedEvent reservedEvent = new InventoryReservedEvent();
@@ -66,4 +86,5 @@ public class OrderEventListener {
             );
         }
     }
+
 }

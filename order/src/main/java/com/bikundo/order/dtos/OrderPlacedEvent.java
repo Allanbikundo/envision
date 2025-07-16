@@ -1,4 +1,4 @@
-package com.bikundo.order.implementations;
+package com.bikundo.order.dtos;
 
 import java.io.Serializable;
 import java.util.List;

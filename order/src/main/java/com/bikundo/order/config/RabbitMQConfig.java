@@ -13,9 +13,13 @@ import org.springframework.amqp.core.Queue;
 
 @Configuration
 public class RabbitMQConfig {
-    public static final String ORDER_EXCHANGE = "orders.exchange";
-    public static final String ORDER_PLACED_QUEUE = "orders.placed.queue";
-    public static final String ORDER_PLACED_ROUTING_KEY = "orders.placed";
+    public static final String ORDER_EXCHANGE = "order.exchange";
+    public static final String ORDER_PLACED_QUEUE = "order.placed.queue";
+    public static final String ORDER_PLACED_ROUTING_KEY = "order.placed";
+
+
+    public static final String INVENTORY_EXCHANGE = "inventory.exchange";
+    public static final String RESTOCK_INVENTORY_ROUTING_KEY = "inventory.restock";
 
     @Bean
     public TopicExchange orderExchange() {
