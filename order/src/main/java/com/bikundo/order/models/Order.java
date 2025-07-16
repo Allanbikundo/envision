@@ -44,14 +44,6 @@ public class Order {
     @Column(name = "external_reference")
     private String externalReference;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "shipping_address_id")
-    private Address shippingAddress;
-
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "billing_address_id")
-    private Address billingAddress;
-
     private String notes;
 
     @Column(name = "change_by")

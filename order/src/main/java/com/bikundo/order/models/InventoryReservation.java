@@ -27,9 +27,6 @@ public class InventoryReservation {
     @Column(name = "product_id", nullable = false)
     private Long productId;
 
-    @Column(name = "product_sku", nullable = false)
-    private String productSku;
-
     @Column(name = "quantity_reserved", nullable = false)
     private Integer quantityReserved;
 

@@ -28,7 +28,7 @@ spring:
 
 logging:
   level:
-    org.springframework.security: INFO
+    org.springframework.security: DEBUG
     org.hibernate.SQL: DEBUG
 
 springdoc:
@@ -38,7 +38,7 @@ springdoc:
     path: /swagger-ui.html
 
 keycloak:
-  auth-server-url: http://localhost:8080
+  auth-server-url: http://envision.ambience.co.ke:8080
   realm: ecommerce
   resource: order-client
   public-client: true
@@ -48,7 +48,7 @@ keycloak:
   ssl-required: external
   cors: true
   credentials:
-    secret: VcCYnLvPYQ6jytago8FV5am9AmMzsbjc
+    secret: UEw6mkVHrdO7iyWzDI4ZeoP
 
 
 

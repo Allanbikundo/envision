@@ -26,12 +26,6 @@ databaseChangeLog:
                   }
               - column:
                   {
-                    name: product_sku,
-                    type: VARCHAR(100),
-                    constraints: { nullable: false },
-                  }
-              - column:
-                  {
                     name: quantity_reserved,
                     type: INTEGER,
                     constraints: { nullable: false },

@@ -78,13 +78,18 @@ services:
       SPRING_DATASOURCE_USERNAME: productuser
       SPRING_DATASOURCE_PASSWORD: productpass
       SPRING_RABBITMQ_HOST: rabbitmq
-      SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_ISSUER_URI: http://keycloak:8080/realms/ecommerce
+      KEYCLOAK_AUTH_SERVER_URL: http://keycloak:8080
+      KEYCLOAK_REALM: ecommerce
+      LOGGING_LEVEL_ORG_SPRINGFRAMEWORK_SECURITY: INFO
+      LOGGING_LEVEL_ORG_SPRINGFRAMEWORK_WEB: INFO
+      SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_ISSUER_URI: http://envision.ambience.co.ke:8080/realms/ecommerce
+      SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_JWK_SET_URI: http://keycloak:8080/realms/ecommerce/protocol/openid-connect/certs
     depends_on:
       - product-db
       - rabbitmq
       - keycloak
     ports:
-      - "8082:8082"
+      - "8081:8081"
     networks:
       - ecommerce-net
 
@@ -96,19 +101,24 @@ services:
       SPRING_DATASOURCE_USERNAME: orderuser
       SPRING_DATASOURCE_PASSWORD: orderpass
       SPRING_RABBITMQ_HOST: rabbitmq
-      SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_ISSUER_URI: http://keycloak:8080/realms/ecommerce
+      KEYCLOAK_AUTH_SERVER_URL: http://keycloak:8080
+      KEYCLOAK_REALM: ecommerce
+      LOGGING_LEVEL_ORG_SPRINGFRAMEWORK_SECURITY: INFO
+      LOGGING_LEVEL_ORG_SPRINGFRAMEWORK_WEB: INFO
+      SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_ISSUER_URI: http://envision.ambience.co.ke:8080/realms/ecommerce
+      SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_JWK_SET_URI: http://keycloak:8080/realms/ecommerce/protocol/openid-connect/certs
     depends_on:
       - order-db
       - rabbitmq
       - keycloak
     ports:
-      - "8081:8081"
+      - "8082:8082"
     networks:
       - ecommerce-net
 
   # 🎨 UI
   ui:
-    image: ghcr.io/allanbikundo/ui:main-e4f8760
+    image: ghcr.io/allanbikundo/ui:main-6d789ae
     ports:
       - "9080:9080"
     depends_on:

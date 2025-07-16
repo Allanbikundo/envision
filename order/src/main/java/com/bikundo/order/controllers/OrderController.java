@@ -7,8 +7,10 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
+import java.util.List;
 import java.util.UUID;
 
 import org.springframework.http.ResponseEntity;
@@ -35,10 +37,34 @@ public class OrderController {
     }, security = @SecurityRequirement(name = "bearerAuth"))
     @PostMapping
     public ResponseEntity<OrderDto> placeOrder(
-            @RequestBody CreateOrderRequest request,
+            @Valid @RequestBody CreateOrderRequest request,
             @Parameter(hidden = true) @AuthenticationPrincipal Jwt jwt) {
         UUID userId = UUID.fromString(jwt.getSubject());
         OrderDto response = orderService.placeOrder(request, userId);
         return ResponseEntity.ok(response);
+    }
+
+    @GetMapping("/{id}")
+    @Operation(summary = "Get order by ID")
+    public ResponseEntity<OrderDto> getOrderById(@PathVariable Long id) {
+        return ResponseEntity.ok(orderService.getOrderById(id));
+    }
+
+    @GetMapping
+    @Operation(summary = "Get all orders for the logged-in user")
+    public ResponseEntity<List<OrderDto>> getOrdersForUser(@AuthenticationPrincipal Jwt jwt) {
+        UUID userId = UUID.fromString(jwt.getSubject());
+        return ResponseEntity.ok(orderService.getOrdersByUserId(userId));
+    }
+
+    @DeleteMapping("/{id}")
+    @Operation(summary = "Cancel an order by ID")
+    public ResponseEntity<Void> cancelOrder(
+            @PathVariable Long id,
+            @AuthenticationPrincipal Jwt jwt
+    ) {
+        UUID userId = UUID.fromString(jwt.getSubject());
+        orderService.cancelOrder(id, userId);
+        return ResponseEntity.noContent().build();
     }
 }

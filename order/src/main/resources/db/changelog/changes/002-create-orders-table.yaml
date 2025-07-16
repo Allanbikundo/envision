@@ -23,6 +23,11 @@ databaseChangeLog:
                   constraints:
                     nullable: false
               - column:
+                  name: change_by
+                  type: UUID
+                  constraints:
+                    nullable: false
+              - column:
                   name: order_status
                   type: VARCHAR(20)
                   defaultValue: PENDING
@@ -37,12 +42,6 @@ databaseChangeLog:
                   name: currency
                   type: VARCHAR(3)
                   defaultValue: USD
-              - column:
-                  name: shipping_address_id
-                  type: BIGINT
-              - column:
-                  name: billing_address_id
-                  type: BIGINT
               - column:
                   name: notes
                   type: TEXT
@@ -84,15 +83,3 @@ databaseChangeLog:
               ALTER TABLE orders
               ADD CONSTRAINT check_order_status
               CHECK (order_status IN ('PENDING', 'CONFIRMED', 'PROCESSING', 'SHIPPED', 'DELIVERED', 'CANCELLED', 'FAILED'));
-        - addForeignKeyConstraint:
-            baseTableName: orders
-            baseColumnNames: shipping_address_id
-            referencedTableName: addresses
-            referencedColumnNames: id
-            constraintName: fk_orders_shipping_address
-        - addForeignKeyConstraint:
-            baseTableName: orders
-            baseColumnNames: billing_address_id
-            referencedTableName: addresses
-            referencedColumnNames: id
-            constraintName: fk_orders_billing_address

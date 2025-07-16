@@ -20,7 +20,7 @@ public class InventoryFailedListener {
         log.warn("Inventory failed for order {}: {}", event.getOrderId(), event.getReason());
 
         try {
-            orderService.updateOrderStatus(event.getOrderId(), Order.OrderStatus.CANCELLED, "INVENTORY-SERVICE");
+            orderService.updateOrderStatus(event.getOrderId(), Order.OrderStatus.FAILED, "INVENTORY-SERVICE");
         } catch (Exception ex) {
             log.error("Failed to mark order {} as FAILED", event.getOrderId(), ex);
         }
