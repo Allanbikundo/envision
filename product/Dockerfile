@@ -1,21 +1,25 @@
-# Build stage
-FROM maven:3.9.6-eclipse-temurin-17-alpine AS build
+# Base stage for dependency resolution
+FROM maven:3.9.6-eclipse-temurin-17-alpine AS base
 WORKDIR /app
-
-# Copy only the POM file first to leverage Docker cache
 COPY pom.xml .
-
-# Download all dependencies (this step is cached as long as pom.xml doesn't change)
 RUN mvn dependency:go-offline -B
 
-# Copy the rest of the source code
+# Test stage - runs tests in parallel
+FROM base AS test
 COPY src ./src
+# Run tests with parallel execution and generate reports
+RUN mvn test -T 1C -Dmaven.test.failure.ignore=false \
+    -Dsurefire.useFile=false \
+    -Dsurefire.printSummary=true
 
-# Build the application
-RUN mvn package -DskipTests
+# Build stage - compiles and packages (can run in parallel with tests)
+FROM base AS build
+COPY src ./src
+# Build without running tests (already done in test stage)
+RUN mvn package -DskipTests -T 1C
 
 # Runtime stage
-FROM eclipse-temurin:17-jre-alpine
+FROM eclipse-temurin:17-jre-alpine AS production
 
 # Set environment variables
 ENV SPRING_OUTPUT_ANSI_ENABLED=ALWAYS \
@@ -41,12 +45,12 @@ COPY --from=build /app/target/*.jar app.jar
 # Set non-root user
 USER appuser
 
-# Expose the port the app runs on (default Spring Boot port)
-EXPOSE 8080
+# Expose the port the app runs on
+EXPOSE 8082
 
 # Health check
 HEALTHCHECK --interval=30s --timeout=5s --start-period=30s --retries=3 \
-    CMD wget --quiet --tries=1 --spider http://localhost:8080/actuator/health || exit 1
+    CMD wget --quiet --tries=1 --spider http://localhost:8082/actuator/health || exit 1
 
 # Run the application
 ENTRYPOINT ["sh", "-c", "java $JAVA_OPTS -jar /app/app.jar"]

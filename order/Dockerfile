@@ -46,11 +46,11 @@ COPY --from=build /app/target/*.jar app.jar
 USER appuser
 
 # Expose the port the app runs on
-EXPOSE 8080
+EXPOSE 8082
 
 # Health check
 HEALTHCHECK --interval=30s --timeout=5s --start-period=30s --retries=3 \
-    CMD wget --quiet --tries=1 --spider http://localhost:8080/actuator/health || exit 1
+    CMD wget --quiet --tries=1 --spider http://localhost:8082/actuator/health || exit 1
 
 # Run the application
 ENTRYPOINT ["sh", "-c", "java $JAVA_OPTS -jar /app/app.jar"]
