@@ -3,8 +3,8 @@ package com.bikundo.order.implementations;
 import com.bikundo.order.config.RabbitMQConfig;
 import com.bikundo.order.dtos.CreateOrderRequest;
 import com.bikundo.order.dtos.OrderDto;
-import com.bikundo.order.dtos.OrderPlacedEvent;
-import com.bikundo.order.dtos.RestockInventoryEvent;
+import com.bikundo.order.dtos.OrderEvent;
+import com.bikundo.order.dtos.CancelEvent;
 import com.bikundo.order.mappers.OrderMapper;
 import com.bikundo.order.models.Order;
 import com.bikundo.order.models.Order.OrderStatus;
@@ -28,6 +28,8 @@ import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Random;
 import java.util.UUID;
+
+import static com.bikundo.order.config.RabbitMQConfig.*;
 
 @Service
 @RequiredArgsConstructor
@@ -63,12 +65,12 @@ public class OrderServiceImpl implements OrderService {
         orderItemRepository.saveAll(items);
 
         // Emit event to rabbit mq
-        OrderPlacedEvent event = new OrderPlacedEvent();
+        OrderEvent event = new OrderEvent();
         event.setOrderId(order.getId());
         event.setUserId(userId);
 
-        List<OrderPlacedEvent.Item> eventItems = items.stream().map(item -> {
-            OrderPlacedEvent.Item ei = new OrderPlacedEvent.Item();
+        List<OrderEvent.Item> eventItems = items.stream().map(item -> {
+            OrderEvent.Item ei = new OrderEvent.Item();
             ei.setProductId(item.getProductId());
             ei.setQuantity(item.getQuantity());
             return ei;
@@ -77,8 +79,8 @@ public class OrderServiceImpl implements OrderService {
         event.setItems(eventItems);
 
         rabbitTemplate.convertAndSend(
-                RabbitMQConfig.ORDER_EXCHANGE,
-                RabbitMQConfig.ORDER_PLACED_ROUTING_KEY,
+                ORDER_EXCHANGE,
+                ORDER_PLACED_ROUTING_KEY,
                 event);
 
         // Step 5: Return DTO
@@ -101,18 +103,6 @@ public class OrderServiceImpl implements OrderService {
         return dto;
     }
 
-    @Override
-    public List<OrderDto> getOrdersByUserId(UUID userId) {
-        List<Order> orders = orderRepository.findByCustomerId(userId);
-
-        return orders.stream().map(order -> {
-            List<OrderItem> items = orderItemRepository.findByOrderId(order.getId());
-            OrderDto dto = orderMapper.toDto(order);
-            dto.setItems(items.stream().map(orderMapper::toDto).toList());
-            return dto;
-        }).toList();
-    }
-
 
     @Override
     @Transactional
@@ -124,29 +114,26 @@ public class OrderServiceImpl implements OrderService {
             throw new AccessDeniedException("You cannot cancel this order.");
         }
 
+        // check for pending and remove it from the queue
         if (!OrderStatus.CONFIRMED.equals(order.getOrderStatus())) {
             throw new IllegalStateException("Only confirmed orders can be cancelled.");
         }
 
-        order.setOrderStatus(OrderStatus.CANCELLED);
-        order.setCancelledAt(Instant.now());
-        orderRepository.save(order);
-
         // 🔄 Restore inventory
         List<OrderItem> items = orderItemRepository.findByOrderId(order.getId());
 
-        RestockInventoryEvent event = new RestockInventoryEvent();
+        OrderEvent event = new OrderEvent();
         event.setOrderId(order.getId());
         event.setItems(items.stream().map(i -> {
-            RestockInventoryEvent.Item item = new RestockInventoryEvent.Item();
+            OrderEvent.Item item = new OrderEvent.Item();
             item.setProductId(i.getProductId());
             item.setQuantity(i.getQuantity());
             return item;
         }).toList());
 
         rabbitTemplate.convertAndSend(
-                RabbitMQConfig.INVENTORY_EXCHANGE,
-                RabbitMQConfig.RESTOCK_INVENTORY_ROUTING_KEY,
+                ORDER_EXCHANGE,
+                ORDER_CANCEL_ROUTING_KEY,
                 event
         );
 

@@ -1,9 +1,8 @@
 package com.bikundo.product.event_listeners;
 
 import com.bikundo.product.config.RabbitMQConfig;
-import com.bikundo.product.dtos.InventoryFailedEvent;
-import com.bikundo.product.dtos.InventoryReservedEvent;
-import com.bikundo.product.dtos.OrderPlacedEvent;
+import com.bikundo.product.dtos.OrderResult;
+import com.bikundo.product.dtos.OrderEvent;
 import com.bikundo.product.models.Product;
 import com.bikundo.product.repositories.ProductRepository;
 import lombok.RequiredArgsConstructor;
@@ -17,32 +16,32 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import static com.bikundo.product.config.RabbitMQConfig.ORDER_PLACED_QUEUE;
+
 @Component
 @RequiredArgsConstructor
 @Slf4j
-public class OrderEventListener {
-
-
+public class OrderPlacedListener {
 
     private final ProductRepository productRepository;
     private final RabbitTemplate rabbitTemplate;
 
-    @RabbitListener(queues = "${mq.order.placed.queue:order.placed.queue}")
+    @RabbitListener(queues = ORDER_PLACED_QUEUE)
     @Transactional
-    public void handleOrderPlaced(OrderPlacedEvent event) {
+    public void handleOrderPlaced(OrderEvent event) {
         log.info("Processing order placed: {}", event.getOrderId());
 
         try {
             // Step 1: Fetch all products involved
             List<Long> productIds = event.getItems().stream()
-                    .map(OrderPlacedEvent.Item::getProductId)
+                    .map(OrderEvent.Item::getProductId)
                     .toList();
 
             Map<Long, Product> productMap = productRepository.findAllById(productIds).stream()
                     .collect(Collectors.toMap(Product::getId, p -> p));
 
             // Step 2: Validate stock availability
-            for (OrderPlacedEvent.Item item : event.getItems()) {
+            for (OrderEvent.Item item : event.getItems()) {
                 Product product = productMap.get(item.getProductId());
                 if (product == null) {
                     throw new IllegalArgumentException("Product not found: " + item.getProductId());
@@ -54,35 +53,37 @@ public class OrderEventListener {
             }
 
             // Step 3: All good → reduce stock
-            for (OrderPlacedEvent.Item item : event.getItems()) {
+            for (OrderEvent.Item item : event.getItems()) {
                 Product product = productMap.get(item.getProductId());
                 product.setStockQuantity(product.getStockQuantity() - item.getQuantity());
             }
 
             productRepository.saveAll(productMap.values());
 
-            // ✅ Success → publish InventoryReservedEvent
-            InventoryReservedEvent reservedEvent = new InventoryReservedEvent();
-            reservedEvent.setOrderId(event.getOrderId());
-
+            // ✅ Success → publish confirmed order result
+            OrderResult orderResult = new OrderResult();
+            orderResult.setOrderId(event.getOrderId());
+            orderResult.setMessage("Goods acquired");
+            orderResult.setOrderStatus(OrderResult.OrderStatus.CONFIRMED);
             rabbitTemplate.convertAndSend(
-                    RabbitMQConfig.INVENTORY_EXCHANGE,
-                    RabbitMQConfig.INVENTORY_RESERVED_ROUTING_KEY,
-                    reservedEvent
+                    RabbitMQConfig.ORDER_EXCHANGE,
+                    RabbitMQConfig.ORDER_RESULT_ROUTING_KEY,
+                    orderResult
             );
 
         } catch (Exception ex) {
             log.error("Inventory reservation failed for order {}: {}", event.getOrderId(), ex.getMessage());
 
-            // ❌ Failure → publish InventoryFailedEvent
-            InventoryFailedEvent failedEvent = new InventoryFailedEvent();
-            failedEvent.setOrderId(event.getOrderId());
-            failedEvent.setReason(ex.getMessage());
+            // ❌ Failure → publish failed order result
+            OrderResult orderResult = new OrderResult();
+            orderResult.setOrderId(event.getOrderId());
+            orderResult.setMessage(ex.getMessage());
+            orderResult.setOrderStatus(OrderResult.OrderStatus.FAILED);
 
             rabbitTemplate.convertAndSend(
-                    RabbitMQConfig.INVENTORY_EXCHANGE,
-                    RabbitMQConfig.INVENTORY_FAILED_ROUTING_KEY,
-                    failedEvent
+                    RabbitMQConfig.ORDER_EXCHANGE,
+                    RabbitMQConfig.ORDER_RESULT_ROUTING_KEY,
+                    orderResult
             );
         }
     }

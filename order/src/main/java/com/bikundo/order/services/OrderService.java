@@ -10,7 +10,6 @@ import com.bikundo.order.models.Order.OrderStatus;
 public interface OrderService {
     OrderDto placeOrder(CreateOrderRequest request, UUID userId);
     OrderDto getOrderById(Long id);
-    List<OrderDto> getOrdersByUserId(UUID userId);
     void cancelOrder(Long id, UUID userId);
     void updateOrderStatus(Long id, OrderStatus status, String changedBy);
 }

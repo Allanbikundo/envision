@@ -30,7 +30,7 @@ spring:
 
 logging:
   level:
-    org.springframework.security: INFO
+    org.springframework.security: DEBUG
     org.hibernate.SQL: DEBUG
 
 springdoc:
@@ -62,23 +62,3 @@ management:
   endpoint:
     health:
       show-details: when-authorized
-
-rabbitmq:
-  queues:
-    order-placed:
-      name: order.placed.queue
-      durable: true
-      auto-delete: false
-    inventory:
-      name: inventory.restock.queue
-      durable: true
-      auto-delete: false
-  exchanges:
-    order:
-      name: order.exchange
-      type: topic
-  bindings:
-    order-placed:
-      queue: order.placed.queue
-      exchange: order.exchange
-      routing-key: order.placed

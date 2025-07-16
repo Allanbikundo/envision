@@ -7,7 +7,7 @@ import java.util.List;
 import java.util.UUID;
 
 @Data
-public class OrderPlacedEvent implements Serializable {
+public class OrderEvent implements Serializable {
     private Long orderId;
     private UUID userId;
     private List<Item> items;

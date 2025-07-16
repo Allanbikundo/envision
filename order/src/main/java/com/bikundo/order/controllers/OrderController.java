@@ -50,13 +50,6 @@ public class OrderController {
         return ResponseEntity.ok(orderService.getOrderById(id));
     }
 
-    @GetMapping
-    @Operation(summary = "Get all orders for the logged-in user")
-    public ResponseEntity<List<OrderDto>> getOrdersForUser(@AuthenticationPrincipal Jwt jwt) {
-        UUID userId = UUID.fromString(jwt.getSubject());
-        return ResponseEntity.ok(orderService.getOrdersByUserId(userId));
-    }
-
     @DeleteMapping("/{id}")
     @Operation(summary = "Cancel an order by ID")
     public ResponseEntity<Void> cancelOrder(

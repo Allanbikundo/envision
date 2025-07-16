@@ -9,7 +9,7 @@ import java.util.List;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class RestockInventoryEvent {
+public class CancelEvent {
     private Long orderId;
     private List<Item> items;
 

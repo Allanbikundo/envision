@@ -7,7 +7,7 @@ import java.util.UUID;
 import lombok.Data;
 
 @Data
-public class OrderPlacedEvent implements Serializable {
+public class OrderEvent implements Serializable {
     private Long orderId;
     private UUID userId;
     private List<Item> items;
