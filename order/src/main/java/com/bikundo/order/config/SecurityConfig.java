@@ -23,6 +23,7 @@ import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationConverter;
 import org.springframework.security.web.SecurityFilterChain;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -52,6 +53,7 @@ public class SecurityConfig {
                     "/auth/**",
                     "/api-docs/**"
                 ).permitAll()
+
                 .anyRequest().authenticated()
             )
             .headers(headers -> headers
@@ -76,19 +78,34 @@ public class SecurityConfig {
     private Converter<Jwt, ? extends AbstractAuthenticationToken> jwtAuthenticationConverter() {
         JwtAuthenticationConverter jwtConverter = new JwtAuthenticationConverter();
         jwtConverter.setJwtGrantedAuthoritiesConverter(jwt -> {
+            Collection<String> roles = new ArrayList<>();
+            
+            // First, try to get roles from resource_access.order-client
             Map<String, Object> resourceAccess = jwt.getClaim("resource_access");
-            if (resourceAccess == null || !resourceAccess.containsKey("order-client")) {
-                return null;
+            if (resourceAccess != null && resourceAccess.containsKey("order-client")) {
+                @SuppressWarnings("unchecked")
+                Map<String, Object> orderClient = (Map<String, Object>) resourceAccess.get("order-client");
+                @SuppressWarnings("unchecked")
+                Collection<String> clientRoles = (Collection<String>) orderClient.get("roles");
+                if (clientRoles != null) {
+                    roles.addAll(clientRoles);
+                }
             }
             
-            @SuppressWarnings("unchecked")
-            Map<String, Object> orderClient = (Map<String, Object>) resourceAccess.get("order-client");
-            
-            @SuppressWarnings("unchecked")
-            Collection<String> roles = (Collection<String>) orderClient.get("roles");
+            // Fallback to realm_access.roles if no client-specific roles found
+            if (roles.isEmpty()) {
+                Map<String, Object> realmAccess = jwt.getClaim("realm_access");
+                if (realmAccess != null) {
+                    @SuppressWarnings("unchecked")
+                    Collection<String> realmRoles = (Collection<String>) realmAccess.get("roles");
+                    if (realmRoles != null) {
+                        roles.addAll(realmRoles);
+                    }
+                }
+            }
             
             return roles.stream()
-                .map(role -> new SimpleGrantedAuthority("ROLE_" + role.toUpperCase()))
+                .map(role -> new SimpleGrantedAuthority("ROLE_" + role.toUpperCase().replace("-", "_")))
                 .collect(Collectors.toList());
         });
         return jwtConverter;

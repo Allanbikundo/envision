@@ -47,6 +47,24 @@
   "roles": {
     "realm": [
       {
+        "id": "d0144e86-558f-4226-af53-2dabcbe4ddbb",
+        "name": "CUSTOMER",
+        "description": "",
+        "composite": false,
+        "clientRole": false,
+        "containerId": "af11adab-ecd9-47a1-94a3-f22fb3c86ffa",
+        "attributes": {}
+      },
+      {
+        "id": "870f35ff-79e4-4fb3-b52a-3a8b76feb672",
+        "name": "ADMIN",
+        "description": "",
+        "composite": false,
+        "clientRole": false,
+        "containerId": "af11adab-ecd9-47a1-94a3-f22fb3c86ffa",
+        "attributes": {}
+      },
+      {
         "id": "96f21ce1-caf1-4c7c-a895-248603537d37",
         "name": "uma_authorization",
         "description": "${role_uma_authorization}",
@@ -235,8 +253,8 @@
                 "view-identity-providers",
                 "query-realms",
                 "create-client",
-                "view-clients",
                 "manage-events",
+                "view-clients",
                 "query-clients",
                 "query-groups",
                 "manage-users",
@@ -413,7 +431,30 @@
       ]
     }
   },
-  "groups": [],
+  "groups": [
+    {
+      "id": "40d0e604-1047-4efd-93fb-863ea70ae952",
+      "name": "ADMIN",
+      "path": "/ADMIN",
+      "subGroups": [],
+      "attributes": {},
+      "realmRoles": [
+        "ADMIN"
+      ],
+      "clientRoles": {}
+    },
+    {
+      "id": "65867dd1-a18e-4b48-8ad7-5841c3877cf3",
+      "name": "CUSTOMERS",
+      "path": "/CUSTOMERS",
+      "subGroups": [],
+      "attributes": {},
+      "realmRoles": [
+        "CUSTOMER"
+      ],
+      "clientRoles": {}
+    }
+  ],
   "defaultRole": {
     "id": "0cca0b3c-d535-438c-8071-43ca3ab2cce4",
     "name": "default-roles-ecommerce",
@@ -603,7 +644,9 @@
       "publicClient": true,
       "frontchannelLogout": false,
       "protocol": "openid-connect",
-      "attributes": {},
+      "attributes": {
+        "post.logout.redirect.uris": "+"
+      },
       "authenticationFlowBindingOverrides": {},
       "fullScopeAllowed": false,
       "nodeReRegistrationTimeout": 0,
@@ -641,7 +684,9 @@
       "publicClient": false,
       "frontchannelLogout": false,
       "protocol": "openid-connect",
-      "attributes": {},
+      "attributes": {
+        "post.logout.redirect.uris": "+"
+      },
       "authenticationFlowBindingOverrides": {},
       "fullScopeAllowed": false,
       "nodeReRegistrationTimeout": 0,
@@ -693,7 +738,7 @@
         "oidc.ciba.grant.enabled": "false",
         "client.secret.creation.time": "1752604767",
         "backchannel.logout.session.required": "true",
-        "post.logout.redirect.uris": "/*",
+        "post.logout.redirect.uris": "http://envision.ambience.co.ke:*",
         "display.on.consent.screen": "false",
         "oauth2.device.authorization.grant.enabled": "true",
         "backchannel.logout.revoke.offline.tokens": "false"
@@ -785,7 +830,9 @@
       "publicClient": false,
       "frontchannelLogout": false,
       "protocol": "openid-connect",
-      "attributes": {},
+      "attributes": {
+        "post.logout.redirect.uris": "+"
+      },
       "authenticationFlowBindingOverrides": {},
       "fullScopeAllowed": false,
       "nodeReRegistrationTimeout": 0,
@@ -899,6 +946,7 @@
           "config": {
             "introspection.token.claim": "true",
             "multivalued": "true",
+            "userinfo.token.claim": "true",
             "user.attribute": "foo",
             "id.token.claim": "true",
             "access.token.claim": "true",
@@ -1209,7 +1257,8 @@
           "config": {
             "id.token.claim": "true",
             "introspection.token.claim": "true",
-            "access.token.claim": "true"
+            "access.token.claim": "true",
+            "userinfo.token.claim": "true"
           }
         }
       ]
@@ -1452,13 +1501,13 @@
         "config": {
           "allowed-protocol-mapper-types": [
             "oidc-usermodel-attribute-mapper",
+            "oidc-sha256-pairwise-sub-mapper",
             "oidc-address-mapper",
-            "saml-role-list-mapper",
             "oidc-usermodel-property-mapper",
             "oidc-full-name-mapper",
             "saml-user-property-mapper",
-            "saml-user-attribute-mapper",
-            "oidc-sha256-pairwise-sub-mapper"
+            "saml-role-list-mapper",
+            "saml-user-attribute-mapper"
           ]
         }
       },
@@ -1525,13 +1574,13 @@
         "subComponents": {},
         "config": {
           "allowed-protocol-mapper-types": [
-            "saml-user-attribute-mapper",
-            "oidc-usermodel-property-mapper",
+            "oidc-sha256-pairwise-sub-mapper",
             "oidc-address-mapper",
             "oidc-usermodel-attribute-mapper",
             "oidc-full-name-mapper",
-            "oidc-sha256-pairwise-sub-mapper",
             "saml-role-list-mapper",
+            "saml-user-attribute-mapper",
+            "oidc-usermodel-property-mapper",
             "saml-user-property-mapper"
           ]
         }
@@ -2245,8 +2294,8 @@
     "cibaExpiresIn": "120",
     "cibaAuthRequestedUserHint": "login_hint",
     "oauth2DeviceCodeLifespan": "600",
-    "oauth2DevicePollingInterval": "5",
     "clientOfflineSessionMaxLifespan": "0",
+    "oauth2DevicePollingInterval": "5",
     "clientSessionIdleTimeout": "0",
     "parRequestUriLifespan": "60",
     "clientSessionMaxLifespan": "0",
