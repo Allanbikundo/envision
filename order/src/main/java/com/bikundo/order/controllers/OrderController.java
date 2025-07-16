@@ -68,7 +68,7 @@ public class OrderController {
             @ApiResponse(responseCode = "403", description = "Forbidden - Customer role required", content = @Content),
             @ApiResponse(responseCode = "400", description = "Cannot cancel order in current status", content = @Content)
     }, security = @SecurityRequirement(name = "bearerAuth"))
-    @PreAuthorize("hasRole('CUSTOMER')")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Void> cancelOrder(
             @PathVariable Long id,
             @AuthenticationPrincipal Jwt jwt
